@@ -25,3 +25,27 @@ export const apiConfig = {
   baseURL: '/api',
   timeout: 30000,
 };
+
+interface Config {
+  api: {
+    baseURL: string;
+    timeout: number;
+  };
+  auth: {
+    tokenKey: string;
+    tokenPrefix: string;
+  };
+}
+
+const config: Config = {
+  api: {
+    baseURL: 'https://apiferalink.onrender.com',
+    timeout: 30000, // 30 segundos
+  },
+  auth: {
+    tokenKey: 'accessToken',
+    tokenPrefix: 'Bearer',
+  }
+};
+
+export default config;

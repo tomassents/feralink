@@ -1,36 +1,32 @@
 import axios from "axios";
-import { apiConfig } from "@/config";
+import config from '@/config';
 
 const axiosInstance = axios.create({
-  baseURL: apiConfig.baseURL,
-  timeout: apiConfig.timeout,
+  baseURL: config.api.baseURL,
+  timeout: config.api.timeout,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Error en la petición:', error);
+    return Promise.reject(error);
+  }
+);
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    const token = window.localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
-);
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem("accessToken");
-      window.location.href = "/auth/sign-in";
-    }
-    return Promise.reject(
-      (error.response && error.response.data) || "Something went wrong"
-    );
+    return Promise.reject(error);
   }
 );
 

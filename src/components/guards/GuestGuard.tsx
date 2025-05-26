@@ -1,21 +1,30 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 import useAuth from "@/hooks/useAuth";
 
-interface GuestGuardType {
-  children: React.ReactNode;
+interface GuestGuardProps {
+  children: ReactNode;
 }
 
 // For routes that can only be accessed by unauthenticated users
-function GuestGuard({ children }: GuestGuardType) {
-  const { isAuthenticated, isInitialized } = useAuth();
+const GuestGuard = ({ children }: GuestGuardProps) => {
+  const { isAuthenticated, user } = useAuth();
 
-  if (isInitialized && isAuthenticated) {
-    return <Navigate to="/" />;
+  if (isAuthenticated && user) {
+    // Redirect based on user role
+    const roleRoutes: { [key: string]: string } = {
+      Admin: "/admin",
+      Doctor: "/doctor",
+      Client: "/client",
+      Clinic: "/clinic",
+    };
+
+    const route = roleRoutes[user.Role.name] || "/client";
+    return <Navigate to={route} />;
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
-}
+  return <>{children}</>;
+};
 
 export default GuestGuard;

@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, RouteObject } from "react-router-dom";
 
 import async from "@/components/Async";
 
@@ -17,10 +17,12 @@ import PresentationLayout from "@/layouts/Presentation";
 // Guards
 import AuthGuard from "@/components/guards/AuthGuard";
 import RoleGuard from "@/components/guards/RoleGuard";
+import GuestGuard from "@/components/guards/GuestGuard";
 
 // Auth components
 import SignIn from "@/pages/auth/SignIn";
 import SignUp from "@/pages/auth/SignUp";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Page404 from "@/pages/auth/Page404";
 import Page500 from "@/pages/auth/Page500";
@@ -139,18 +141,26 @@ const ClientPets = async(() => import("@/pages/client/Pets"));
 const ClientAppointments = async(() => import("@/pages/client/Appointments"));
 const ClientMedicalRecords = async(() => import("@/pages/client/MedicalRecords"));
 
-const routes = [
+const routes: RouteObject[] = [
   {
-    path: "/",
-    element: <AuthCoverLayout />,
+    path: "/auth",
+    element: (
+      <GuestGuard>
+        <AuthLayout />
+      </GuestGuard>
+    ),
     children: [
       {
-        path: "",
+        path: "sign-in",
         element: <SignIn />,
       },
       {
         path: "sign-up",
         element: <SignUp />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
       },
       {
         path: "reset-password",
@@ -159,12 +169,10 @@ const routes = [
     ],
   },
   {
-    path: "admin",
+    path: "/admin",
     element: (
       <AuthGuard>
-        <RoleGuard roles={["admin"]}>
-          <DashboardLayout />
-        </RoleGuard>
+        <DashboardLayout />
       </AuthGuard>
     ),
     children: [
@@ -172,55 +180,13 @@ const routes = [
         path: "",
         element: <AdminDashboard />,
       },
-      {
-        path: "users",
-        element: <AdminUsers />,
-      },
-      {
-        path: "clinics",
-        element: <AdminClinics />,
-      },
-      {
-        path: "settings",
-        element: <AdminSettings />,
-      },
     ],
   },
   {
-    path: "clinic",
+    path: "/doctor",
     element: (
       <AuthGuard>
-        <RoleGuard roles={["clinic"]}>
-          <DashboardLayout />
-        </RoleGuard>
-      </AuthGuard>
-    ),
-    children: [
-      {
-        path: "",
-        element: <ClinicDashboard />,
-      },
-      {
-        path: "doctors",
-        element: <ClinicDoctors />,
-      },
-      {
-        path: "appointments",
-        element: <ClinicAppointments />,
-      },
-      {
-        path: "settings",
-        element: <ClinicSettings />,
-      },
-    ],
-  },
-  {
-    path: "doctor",
-    element: (
-      <AuthGuard>
-        <RoleGuard roles={["doctor"]}>
-          <DashboardLayout />
-        </RoleGuard>
+        <DashboardLayout />
       </AuthGuard>
     ),
     children: [
@@ -228,27 +194,13 @@ const routes = [
         path: "",
         element: <DoctorDashboard />,
       },
-      {
-        path: "patients",
-        element: <DoctorPatients />,
-      },
-      {
-        path: "appointments",
-        element: <DoctorAppointments />,
-      },
-      {
-        path: "medical-records",
-        element: <DoctorMedicalRecords />,
-      },
     ],
   },
   {
-    path: "client",
+    path: "/client",
     element: (
       <AuthGuard>
-        <RoleGuard roles={["client"]}>
-          <DashboardLayout />
-        </RoleGuard>
+        <DashboardLayout />
       </AuthGuard>
     ),
     children: [
@@ -256,19 +208,25 @@ const routes = [
         path: "",
         element: <ClientDashboard />,
       },
+    ],
+  },
+  {
+    path: "/clinic",
+    element: (
+      <AuthGuard>
+        <DashboardLayout />
+      </AuthGuard>
+    ),
+    children: [
       {
-        path: "pets",
-        element: <ClientPets />,
-      },
-      {
-        path: "appointments",
-        element: <ClientAppointments />,
-      },
-      {
-        path: "medical-records",
-        element: <ClientMedicalRecords />,
+        path: "",
+        element: <ClinicDashboard />,
       },
     ],
+  },
+  {
+    path: "/",
+    element: <Navigate to="/auth/sign-in" />,
   },
   {
     path: "dashboard",
@@ -383,24 +341,6 @@ const routes = [
       {
         path: "",
         element: <Calendar />,
-      },
-    ],
-  },
-  {
-    path: "auth",
-    element: <AuthLayout />,
-    children: [
-      {
-        path: "sign-in",
-        element: <SignIn />,
-      },
-      {
-        path: "sign-up",
-        element: <SignUp />,
-      },
-      {
-        path: "reset-password",
-        element: <ResetPassword />,
       },
     ],
   },

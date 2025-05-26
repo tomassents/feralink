@@ -30,8 +30,8 @@ export interface LoginResponse {
 }
 
 class UserService {
-  async register(data: UserRegistration): Promise<User> {
-    const response = await axios.post<User>("/api/users/register", data);
+  async register(data: UserRegistration): Promise<AuthUser> {
+    const response = await axios.post<AuthUser>("/api/users/register", data);
     return response.data;
   }
 

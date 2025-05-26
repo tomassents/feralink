@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 
@@ -57,14 +58,12 @@ const JWTReducer = (
         isAuthenticated: false,
         user: null,
       };
-
     case SIGN_UP:
       return {
         ...state,
         isAuthenticated: true,
         user: action.payload.user,
       };
-
     default:
       return state;
   }
@@ -74,16 +73,17 @@ const AuthContext = createContext<JWTContextType | null>(null);
 
 function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(JWTReducer, initialState);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initialize = async () => {
       try {
-        const accessToken = window.localStorage.getItem("accessToken");
+        const token = window.localStorage.getItem("accessToken");
 
-        if (accessToken && isValidToken(accessToken)) {
-          setSession(accessToken);
+        if (token && isValidToken(token)) {
+          setSession(token);
 
-          // Obtener la información completa del usuario
+          // Fetch user data from the API
           const user = await userService.getMe();
 
           dispatch({
@@ -93,6 +93,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
               user,
             },
           });
+
+          // Redirect based on role if we're on the login page
+          if (window.location.pathname === '/auth/sign-in') {
+            handleRedirect(user.Role.name);
+          }
         } else {
           dispatch({
             type: INITIALIZE,
@@ -117,6 +122,18 @@ function AuthProvider({ children }: { children: ReactNode }) {
     initialize();
   }, []);
 
+  const handleRedirect = (role: string) => {
+    const roleRoutes: { [key: string]: string } = {
+      Admin: "/admin",
+      Doctor: "/doctor",
+      Client: "/client",
+      Clinic: "/clinic",
+    };
+
+    const route = roleRoutes[role] || "/client";
+    navigate(route);
+  };
+
   const signIn = async (username: string, password: string) => {
     try {
       const response = await userService.login({ username, password });
@@ -124,7 +141,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(token);
       
-      // Obtener la información completa del usuario
+      // Fetch user data after successful login
       const user = await userService.getMe();
 
       dispatch({
@@ -133,6 +150,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
           user,
         },
       });
+
+      // Redirect based on role
+      handleRedirect(user.Role.name);
     } catch (error) {
       console.error('Error during sign in:', error);
       throw error;
@@ -142,6 +162,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     setSession(null);
     dispatch({ type: SIGN_OUT });
+    navigate('/auth/sign-in');
   };
 
   const signUp = async (
@@ -151,23 +172,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
     lastName: string
   ) => {
     try {
-      // Primero registramos el usuario
-      const response = await axios.post("/api/users/register", {
+      // Register the user
+      const response = await userService.register({
         username,
         password,
-        user_type_id: 1, // Por defecto, tipo de usuario cliente
-        branch_id: 1, // Por defecto, sucursal principal
-        role_id: 1, // Por defecto, rol básico
+        user_type_id: 1, // Default to client type
+        branch_id: 1, // Default to main branch
+        role_id: 1, // Default to basic role
       });
-      
-      // Luego creamos su información personal
+
+      // Create personal info
       await axios.post("/api/personal-info", {
-        user_id: response.data.id,
+        user_id: response.id,
         first_name: firstName,
         last_name: lastName,
       });
-      
-      // Ahora hacemos login automáticamente
+
+      // Automatically sign in after successful registration
       await signIn(username, password);
     } catch (error) {
       console.error('Error during sign up:', error);
@@ -182,7 +203,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         method: "jwt",
-        user: state.user,
         signIn,
         signOut,
         signUp,

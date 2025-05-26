@@ -52,16 +52,16 @@ export interface AuthState {
   user: AuthUser | null;
 }
 
-export type JWTContextType = {
+export interface JWTContextType {
   isAuthenticated: boolean;
   isInitialized: boolean;
   user: AuthUser | null;
-  method: 'jwt';
+  method: string;
   signIn: (username: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
   signUp: (username: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  signOut: () => Promise<void>;
   resetPassword: (username: string) => void;
-};
+}
 
 export type FirebaseAuthContextType = {
   isAuthenticated: boolean;

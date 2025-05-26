@@ -1,21 +1,21 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-
+import React, { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 
-interface AuthGuardType {
-  children: React.ReactNode;
+interface AuthGuardProps {
+  children: ReactNode;
 }
 
 // For routes that can only be accessed by authenticated users
-function AuthGuard({ children }: AuthGuardType) {
-  const { isAuthenticated, isInitialized } = useAuth();
+const AuthGuard = ({ children }: AuthGuardProps) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
 
-  if (isInitialized && !isAuthenticated) {
-    return <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/auth/sign-in" state={{ from: location }} replace />;
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
-}
+  return <>{children}</>;
+};
 
 export default AuthGuard;

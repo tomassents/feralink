@@ -1,58 +1,31 @@
-import { decodeJwt, jwtVerify, SignJWT, JWTPayload } from "jose";
-import axios from "./axios";
+import { jwtDecode } from 'jwt-decode';
+import axios from './axios';
+import config from '@/config';
 
-const isValidToken = (accessToken: string) => {
-  if (!accessToken) {
+export const isValidToken = (token: string | null): boolean => {
+  if (!token) {
     return false;
   }
 
-  const decoded = decodeJwt(accessToken);
-  const currentTime = Date.now() / 1000;
-
-  return decoded.exp !== undefined && decoded.exp > currentTime;
+  try {
+    const decoded = jwtDecode<{ exp: number }>(token);
+    const currentTime = Date.now() / 1000;
+    return decoded.exp > currentTime;
+  } catch {
+    return false;
+  }
 };
 
-const setSession = (accessToken: string | null) => {
-  if (accessToken) {
-    localStorage.setItem("accessToken", accessToken);
-    axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+export const setSession = (token: string | null) => {
+  if (token) {
+    window.localStorage.setItem(config.auth.tokenKey, token);
+    axios.defaults.headers.common.Authorization = `${config.auth.tokenPrefix} ${token}`;
   } else {
-    localStorage.removeItem("accessToken");
+    window.localStorage.removeItem(config.auth.tokenKey);
     delete axios.defaults.headers.common.Authorization;
   }
 };
 
-const verify = async (token: string, secret: string) => {
-  try {
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(secret) // Secret needs to be Uint8Array
-    );
-    return payload;
-  } catch (error) {
-    console.error("Invalid token:", error);
-    return null;
-  }
+export const getToken = (): string | null => {
+  return window.localStorage.getItem(config.auth.tokenKey);
 };
-
-const sign = async (
-  payload: JWTPayload,
-  secret: string,
-  options: {
-    expiresIn?: string;
-  } = {}
-) => {
-  try {
-    const jwt = await new SignJWT(payload)
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime(options.expiresIn || "1h")
-      .setIssuedAt()
-      .sign(new TextEncoder().encode(secret));
-    return jwt;
-  } catch (error) {
-    console.error("Error signing token:", error);
-    return null;
-  }
-};
-
-export { isValidToken, setSession, verify, sign };
