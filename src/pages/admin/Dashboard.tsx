@@ -19,7 +19,7 @@ const Grid = MuiGrid as any; // Temporary type assertion to fix build
 const AdminDashboard = () => {
   return (
     <React.Fragment>
-      <Helmet title="Dashboard Administrativo" />
+      <Helmet title="Dashboard" />
 
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>

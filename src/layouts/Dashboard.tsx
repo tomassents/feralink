@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { Outlet, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 import {
   Box,
@@ -68,6 +69,7 @@ interface DashboardType {
 const Dashboard: React.FC<DashboardType> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -76,22 +78,31 @@ const Dashboard: React.FC<DashboardType> = ({ children }) => {
   const theme = useTheme();
   const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
 
+  // Función para obtener el título de la página basado en la ruta
+  const getPageTitle = () => {
+    const path = location.pathname.split('/').filter(Boolean);
+    const currentPage = path[path.length - 1] || '';
+    const formattedPage = currentPage.charAt(0).toUpperCase() + currentPage.slice(1);
+    return `Feralink | ${formattedPage || 'Dashboard'}`;
+  };
+
   // Filtrar los menús según el rol del usuario
   const getMenusByRole = () => {
-    const role = user?.role || "client"; // Si no hay rol, mostrar menú de cliente por defecto
+    const role = user?.Role?.name || "Client"; // Si no hay rol, mostrar menú de cliente por defecto
     
     const menuMap = {
-      admin: [feralinkItems[0]], // Solo menú de administración
-      clinic: [feralinkItems[1]], // Solo menú de veterinaria
-      doctor: [feralinkItems[2]], // Solo menú de médico
-      client: [feralinkItems[3]], // Solo menú de cliente
+      Admin: [feralinkItems[0]], // Solo menú de administración
+      Clinic: [feralinkItems[1]], // Solo menú de veterinaria
+      Doctor: [feralinkItems[2]], // Solo menú de médico
+      Client: [feralinkItems[3]], // Solo menú de cliente
     };
 
-    return menuMap[role as keyof typeof menuMap] || menuMap.client;
+    return menuMap[role as keyof typeof menuMap] || menuMap.Client;
   };
 
   return (
     <Root>
+      <Helmet title={getPageTitle()} />
       <CssBaseline />
       <GlobalStyle />
       <Drawer>

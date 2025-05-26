@@ -32,8 +32,8 @@ function App({ emotionCache = clientSideEmotionCache }) {
     <CacheProvider value={emotionCache}>
       <HelmetProvider>
         <Helmet
-          titleTemplate="%s | Mira - React Material UI Admin Dashboard"
-          defaultTitle="Mira - React Material UI Admin Dashboard"
+          titleTemplate="%s | Feralink"
+          defaultTitle="Feralink"
         />
         <Provider store={store}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
