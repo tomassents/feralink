@@ -16,6 +16,7 @@ import PresentationLayout from "@/layouts/Presentation";
 
 // Guards
 import AuthGuard from "@/components/guards/AuthGuard";
+import RoleGuard from "@/components/guards/RoleGuard";
 
 // Auth components
 import SignIn from "@/pages/auth/SignIn";
@@ -114,21 +115,173 @@ const ApexCharts = async(() => import("@/pages/charts/ApexCharts"));
 // Maps components
 const VectorMaps = async(() => import("@/pages/maps/VectorMaps"));
 
+// Admin pages
+const AdminDashboard = async(() => import("@/pages/admin/Dashboard"));
+const AdminUsers = async(() => import("@/pages/admin/Users"));
+const AdminClinics = async(() => import("@/pages/admin/Clinics"));
+const AdminSettings = async(() => import("@/pages/admin/Settings"));
+
+// Clinic pages
+const ClinicDashboard = async(() => import("@/pages/clinic/Dashboard"));
+const ClinicDoctors = async(() => import("@/pages/clinic/Doctors"));
+const ClinicAppointments = async(() => import("@/pages/clinic/Appointments"));
+const ClinicSettings = async(() => import("@/pages/clinic/Settings"));
+
+// Doctor pages
+const DoctorDashboard = async(() => import("@/pages/doctor/Dashboard"));
+const DoctorPatients = async(() => import("@/pages/doctor/Patients"));
+const DoctorAppointments = async(() => import("@/pages/doctor/Appointments"));
+const DoctorMedicalRecords = async(() => import("@/pages/doctor/MedicalRecords"));
+
+// Client pages
+const ClientDashboard = async(() => import("@/pages/client/Dashboard"));
+const ClientPets = async(() => import("@/pages/client/Pets"));
+const ClientAppointments = async(() => import("@/pages/client/Appointments"));
+const ClientMedicalRecords = async(() => import("@/pages/client/MedicalRecords"));
+
 const routes = [
   {
     path: "/",
-    element: <PresentationLayout />,
+    element: <AuthCoverLayout />,
     children: [
       {
         path: "",
-        element: <Landing />,
+        element: <SignIn />,
+      },
+      {
+        path: "sign-up",
+        element: <SignUp />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPassword />,
+      },
+    ],
+  },
+  {
+    path: "admin",
+    element: (
+      <AuthGuard>
+        <RoleGuard roles={["admin"]}>
+          <DashboardLayout />
+        </RoleGuard>
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "users",
+        element: <AdminUsers />,
+      },
+      {
+        path: "clinics",
+        element: <AdminClinics />,
+      },
+      {
+        path: "settings",
+        element: <AdminSettings />,
+      },
+    ],
+  },
+  {
+    path: "clinic",
+    element: (
+      <AuthGuard>
+        <RoleGuard roles={["clinic"]}>
+          <DashboardLayout />
+        </RoleGuard>
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "",
+        element: <ClinicDashboard />,
+      },
+      {
+        path: "doctors",
+        element: <ClinicDoctors />,
+      },
+      {
+        path: "appointments",
+        element: <ClinicAppointments />,
+      },
+      {
+        path: "settings",
+        element: <ClinicSettings />,
+      },
+    ],
+  },
+  {
+    path: "doctor",
+    element: (
+      <AuthGuard>
+        <RoleGuard roles={["doctor"]}>
+          <DashboardLayout />
+        </RoleGuard>
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "",
+        element: <DoctorDashboard />,
+      },
+      {
+        path: "patients",
+        element: <DoctorPatients />,
+      },
+      {
+        path: "appointments",
+        element: <DoctorAppointments />,
+      },
+      {
+        path: "medical-records",
+        element: <DoctorMedicalRecords />,
+      },
+    ],
+  },
+  {
+    path: "client",
+    element: (
+      <AuthGuard>
+        <RoleGuard roles={["client"]}>
+          <DashboardLayout />
+        </RoleGuard>
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "",
+        element: <ClientDashboard />,
+      },
+      {
+        path: "pets",
+        element: <ClientPets />,
+      },
+      {
+        path: "appointments",
+        element: <ClientAppointments />,
+      },
+      {
+        path: "medical-records",
+        element: <ClientMedicalRecords />,
       },
     ],
   },
   {
     path: "dashboard",
-    element: <DashboardLayout />,
+    element: (
+      <AuthGuard>
+        <DashboardLayout />
+      </AuthGuard>
+    ),
     children: [
+      {
+        path: "",
+        element: <Navigate to="/dashboard/default" replace />,
+      },
       {
         path: "default",
         element: <Default />,

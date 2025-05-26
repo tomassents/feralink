@@ -1,7 +1,7 @@
 {
-  "name": "mira",
+  "name": "feralink",
   "version": "6.0.0",
-  "description": "Mira Pro - React Material UI Admin Dashboard Template",
+  "description": "Feralink - Admin Dashboard",
   "author": "Bootlab <support@bootlab.io>",
   "private": true,
   "type": "module",
@@ -52,7 +52,7 @@
     "amazon-cognito-identity-js": "5.2.14",
     "animate.css": "4.1.1",
     "apexcharts": "4.5.0",
-    "axios": "0.30.0",
+    "axios": "^1.5.1",
     "axios-mock-adapter": "1.22.0",
     "buffer": "6.0.3",
     "chart.js": "4.4.8",

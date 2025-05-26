@@ -1,33 +1,190 @@
 import React from "react";
-import styled from "@emotion/styled";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import styled from "@emotion/styled";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
 
-import { Avatar, Typography } from "@mui/material";
+import {
+  Alert as MuiAlert,
+  Box,
+  Breadcrumbs as MuiBreadcrumbs,
+  Button,
+  Checkbox,
+  Divider as MuiDivider,
+  FormControlLabel,
+  Link,
+  TextField as MuiTextField,
+  Typography,
+} from "@mui/material";
+import { spacing } from "@mui/system";
 
-import SignInComponent from "@/components/auth/SignIn";
+import useAuth from "@/hooks/useAuth";
+import TestUsers from "@/components/auth/TestUsers";
 
-const BigAvatar = styled(Avatar)`
-  width: 92px;
-  height: 92px;
+const Alert = styled(MuiAlert)(spacing);
+
+const Divider = styled(MuiDivider)(spacing);
+
+const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
+
+const TextField = styled(MuiTextField)<{ my?: number }>(spacing);
+
+const Centered = styled.div`
   text-align: center;
-  margin: 0 auto ${(props) => props.theme.spacing(5)};
 `;
 
 function SignIn() {
+  const navigate = useNavigate();
+  const { signIn } = useAuth();
+
   return (
-    <React.Fragment>
-      <Helmet title="Sign In" />
-      <BigAvatar alt="Lucy" src="/static/img/avatars/avatar-1.jpg" />
+    <>
+      <Helmet title="Iniciar Sesión" />
+      <Box
+        sx={{
+          backgroundColor: "background.default",
+          minHeight: "100vh",
+          py: 8,
+        }}
+      >
+        <Box
+          sx={{
+            mx: "auto",
+            maxWidth: "400px",
+            p: 3,
+            backgroundColor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 3,
+          }}
+        >
+          <Typography component="h1" variant="h4" align="center" gutterBottom>
+            Bienvenido a Feralink
+          </Typography>
+          <Typography component="h2" variant="body1" align="center">
+            Inicia sesión para continuar
+          </Typography>
 
-      <Typography component="h1" variant="h3" align="center" gutterBottom>
-        Welcome back, Lucy!
-      </Typography>
-      <Typography component="h2" variant="subtitle1" align="center">
-        Sign in to your account to continue
-      </Typography>
+          <Formik
+            initialValues={{
+              email: "",
+              password: "",
+              submit: false,
+            }}
+            validationSchema={Yup.object().shape({
+              email: Yup.string()
+                .email("Debe ser un email válido")
+                .max(255)
+                .required("El email es requerido"),
+              password: Yup.string()
+                .max(255)
+                .required("La contraseña es requerida"),
+            })}
+            onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+              try {
+                await signIn(values.email, values.password);
+                // Redirigir según el rol
+                const roleRedirects = {
+                  admin: "/admin",
+                  clinic: "/clinic",
+                  doctor: "/doctor",
+                  client: "/client"
+                };
+                const user = await axios.get("/api/auth/my-account");
+                const role = user.data?.user?.role || "client";
+                navigate(roleRedirects[role as keyof typeof roleRedirects]);
+              } catch (error: any) {
+                const message = error.message || "Algo salió mal";
+                setStatus({ success: false });
+                setErrors({ submit: message });
+                setSubmitting(false);
+              }
+            }}
+          >
+            {({
+              errors,
+              handleBlur,
+              handleChange,
+              handleSubmit,
+              isSubmitting,
+              touched,
+              values,
+            }) => (
+              <form noValidate onSubmit={handleSubmit}>
+                {errors.submit && (
+                  <Alert mt={2} mb={3} severity="warning">
+                    {errors.submit}
+                  </Alert>
+                )}
+                <TextField
+                  type="email"
+                  name="email"
+                  label="Email"
+                  value={values.email}
+                  error={Boolean(touched.email && errors.email)}
+                  fullWidth
+                  helperText={touched.email && errors.email}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  my={2}
+                />
+                <TextField
+                  type="password"
+                  name="password"
+                  label="Contraseña"
+                  value={values.password}
+                  error={Boolean(touched.password && errors.password)}
+                  fullWidth
+                  helperText={touched.password && errors.password}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  my={2}
+                />
+                <FormControlLabel
+                  control={<Checkbox value="remember" color="primary" />}
+                  label="Recordarme"
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  disabled={isSubmitting}
+                  sx={{ mt: 2 }}
+                >
+                  Iniciar Sesión
+                </Button>
 
-      <SignInComponent />
-    </React.Fragment>
+                <TestUsers />
+
+                <Box mt={2}>
+                  <Link
+                    component={RouterLink}
+                    to="/auth/forgot-password"
+                    variant="body2"
+                    sx={{ textDecoration: "none" }}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </Box>
+                <Box mt={2}>
+                  <Link
+                    component={RouterLink}
+                    to="/auth/sign-up"
+                    variant="body2"
+                    sx={{ textDecoration: "none" }}
+                  >
+                    ¿No tienes una cuenta? Regístrate
+                  </Link>
+                </Box>
+              </form>
+            )}
+          </Formik>
+        </Box>
+      </Box>
+    </>
   );
 }
 

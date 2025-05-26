@@ -127,7 +127,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({
       type: SIGN_IN,
       payload: {
-        user,
+        user: {
+          ...user,
+          role: user.role || "client"
+        },
       },
     });
   };
@@ -167,6 +170,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         method: "jwt",
+        user: {
+          ...state.user,
+          role: state.user?.role || "client",
+        },
         signIn,
         signOut,
         signUp,

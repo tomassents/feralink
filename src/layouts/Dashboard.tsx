@@ -14,10 +14,11 @@ import { spacing } from "@mui/system";
 
 import GlobalStyle from "@/components/GlobalStyle";
 import Navbar from "@/components/navbar/Navbar";
-import dashboardItems from "@/components/sidebar/dashboardItems";
+import feralinkItems from "@/components/sidebar/feralinkItems";
 import Sidebar from "@/components/sidebar/Sidebar";
 import Footer from "@/components/Footer";
 import Settings from "@/components/Settings";
+import useAuth from "@/hooks/useAuth";
 
 const drawerWidth = 258;
 
@@ -65,20 +66,29 @@ interface DashboardType {
 }
 
 const Dashboard: React.FC<DashboardType> = ({ children }) => {
-  const router = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  // Close mobile menu when navigation occurs
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [router.pathname]);
-
   const theme = useTheme();
   const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
+
+  // Filtrar los menús según el rol del usuario
+  const getMenusByRole = () => {
+    const role = user?.role || "client"; // Si no hay rol, mostrar menú de cliente por defecto
+    
+    const menuMap = {
+      admin: [feralinkItems[0]], // Solo menú de administración
+      clinic: [feralinkItems[1]], // Solo menú de veterinaria
+      doctor: [feralinkItems[2]], // Solo menú de médico
+      client: [feralinkItems[3]], // Solo menú de cliente
+    };
+
+    return menuMap[role as keyof typeof menuMap] || menuMap.client;
+  };
 
   return (
     <Root>
@@ -91,13 +101,13 @@ const Dashboard: React.FC<DashboardType> = ({ children }) => {
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
-            items={dashboardItems}
+            items={getMenusByRole()}
           />
         </Box>
         <Box sx={{ display: { xs: "none", md: "block" } }}>
           <Sidebar
             PaperProps={{ style: { width: drawerWidth } }}
-            items={dashboardItems}
+            items={getMenusByRole()}
           />
         </Box>
       </Drawer>

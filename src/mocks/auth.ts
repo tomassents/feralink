@@ -15,11 +15,36 @@ function fakeRequest(time: number) {
 const users: User[] = [
   {
     id: "a8553063-7bd5-45ed-adbe-db6f069a3802",
-    displayName: "Lucy Lavender",
-    email: "demo@bootlab.io",
-    password: "unsafepassword",
+    displayName: "Admin User",
+    email: "admin@feralink.com",
+    password: "admin123",
     avatar: "/static/img/avatars/avatar-1.jpg",
+    role: "admin"
   },
+  {
+    id: "b9553064-8cd6-56fe-bcbf-ec7f070b4803",
+    displayName: "Clinic Manager",
+    email: "clinic@feralink.com",
+    password: "clinic123",
+    avatar: "/static/img/avatars/avatar-2.jpg",
+    role: "clinic"
+  },
+  {
+    id: "c1053065-9de7-67gf-cccg-fd8g081b5804",
+    displayName: "Doctor Smith",
+    email: "doctor@feralink.com",
+    password: "doctor123",
+    avatar: "/static/img/avatars/avatar-3.jpg",
+    role: "doctor"
+  },
+  {
+    id: "d2153066-0ef8-78hg-dddh-ge9h192c6805",
+    displayName: "Client User",
+    email: "client@feralink.com",
+    password: "client123",
+    avatar: "/static/img/avatars/avatar-4.jpg",
+    role: "client"
+  }
 ];
 
 mock.onPost("/api/auth/sign-in").reply(async (config) => {
