@@ -18,3 +18,10 @@ export const cognitoConfig = {
   userPoolId: import.meta.env.VITE_APP_COGNITO_USER_POOL_ID,
   clientId: import.meta.env.VITE_APP_COGNITO_CLIENT_ID,
 };
+
+// Configuración de la API de Feralink
+export const apiConfig = {
+  // En desarrollo usamos URLs relativas que serán manejadas por el proxy
+  baseURL: '/api',
+  timeout: 30000,
+};

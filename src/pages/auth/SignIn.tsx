@@ -5,7 +5,7 @@ import { Link as RouterLink } from "react-router-dom";
 import styled from "@emotion/styled";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
+import axios from "@/utils/axios";
 
 import {
   Alert as MuiAlert,
@@ -38,7 +38,7 @@ const Centered = styled.div`
 
 function SignIn() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   return (
     <>
@@ -69,34 +69,35 @@ function SignIn() {
 
           <Formik
             initialValues={{
-              email: "",
+              username: "",
               password: "",
               submit: false,
             }}
             validationSchema={Yup.object().shape({
-              email: Yup.string()
-                .email("Debe ser un email válido")
+              username: Yup.string()
                 .max(255)
-                .required("El email es requerido"),
+                .required("El usuario es requerido"),
               password: Yup.string()
                 .max(255)
                 .required("La contraseña es requerida"),
             })}
             onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
               try {
-                await signIn(values.email, values.password);
-                // Redirigir según el rol
+                await signIn(values.username, values.password);
+                
+                // Redirigir según el rol del usuario que obtuvimos del token JWT
                 const roleRedirects = {
                   admin: "/admin",
                   clinic: "/clinic",
                   doctor: "/doctor",
                   client: "/client"
                 };
-                const user = await axios.get("/api/auth/my-account");
-                const role = user.data?.user?.role || "client";
+
+                // Usar el rol del usuario del contexto
+                const role = user?.role || "client";
                 navigate(roleRedirects[role as keyof typeof roleRedirects]);
               } catch (error: any) {
-                const message = error.message || "Algo salió mal";
+                const message = error.response?.data?.message || error.message || "Algo salió mal";
                 setStatus({ success: false });
                 setErrors({ submit: message });
                 setSubmitting(false);
@@ -119,13 +120,13 @@ function SignIn() {
                   </Alert>
                 )}
                 <TextField
-                  type="email"
-                  name="email"
-                  label="Email"
-                  value={values.email}
-                  error={Boolean(touched.email && errors.email)}
+                  type="text"
+                  name="username"
+                  label="Usuario"
+                  value={values.username}
+                  error={Boolean(touched.username && errors.username)}
                   fullWidth
-                  helperText={touched.email && errors.email}
+                  helperText={touched.username && errors.username}
                   onBlur={handleBlur}
                   onChange={handleChange}
                   my={2}

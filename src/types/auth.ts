@@ -11,28 +11,56 @@ export type ActionMap<M extends { [index: string]: any }> = {
       };
 };
 
-export type AuthUser = null | Record<string, any>;
+export interface PersonalInfo {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+}
 
-export type AuthState = {
+export interface UserType {
+  name: string;
+  description: string;
+}
+
+export interface Role {
+  name: string;
+  description: string;
+}
+
+export interface Branch {
+  name: string;
+  address: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  is_active: boolean;
+  user_type_id: number;
+  branch_id: number;
+  role_id: number;
+  PersonalInfo: PersonalInfo;
+  UserType: UserType;
+  Role: Role;
+  Branch: Branch;
+}
+
+export interface AuthState {
   isAuthenticated: boolean;
   isInitialized: boolean;
-  user: AuthUser;
-};
+  user: AuthUser | null;
+}
 
 export type JWTContextType = {
   isAuthenticated: boolean;
   isInitialized: boolean;
-  user: AuthUser;
-  method: "jwt";
-  signIn: (email: string, password: string) => Promise<void>;
+  user: AuthUser | null;
+  method: 'jwt';
+  signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signUp: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string
-  ) => Promise<void>;
-  resetPassword: (email: string) => void;
+  signUp: (username: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  resetPassword: (username: string) => void;
 };
 
 export type FirebaseAuthContextType = {
@@ -41,11 +69,11 @@ export type FirebaseAuthContextType = {
   user: AuthUser;
   method: "firebase";
   signIn: (
-    email: string,
+    username: string,
     password: string
   ) => Promise<firebase.auth.UserCredential>;
   signUp: (
-    email: string,
+    username: string,
     password: string,
     firstName: string,
     lastName: string
@@ -54,7 +82,7 @@ export type FirebaseAuthContextType = {
   signInWithFaceBook: () => Promise<firebase.auth.UserCredential>;
   signInWithTwitter: () => Promise<firebase.auth.UserCredential>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  resetPassword: (username: string) => Promise<void>;
 };
 
 export type Auth0ContextType = {
@@ -63,8 +91,8 @@ export type Auth0ContextType = {
   user: AuthUser;
   method: "auth0";
   signIn: () => Promise<void>;
-  signOut: VoidFunction;
-  resetPassword: (email: string) => void;
+  signOut: () => Promise<void>;
+  resetPassword: (username: string) => void;
 };
 
 export type CognitoContextType = {
@@ -72,13 +100,13 @@ export type CognitoContextType = {
   isInitialized: boolean;
   user: AuthUser;
   method: "cognito";
-  signIn: (email: string, password: string) => Promise<unknown>;
+  signIn: (username: string, password: string) => Promise<unknown>;
   signUp: (
-    email: string,
+    username: string,
     password: string,
     firstName: string,
     lastName: string
   ) => Promise<unknown>;
   signOut: VoidFunction;
-  resetPassword: (email: string) => void;
+  resetPassword: (username: string) => void;
 };

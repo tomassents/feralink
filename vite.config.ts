@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react-swc";
 import svgr from "@svgr/rollup";
 
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -30,5 +31,18 @@ export default defineConfig({
   },
   resolve: {
     conditions: ["mui-modern", "module", "browser", "development|production"],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://apiferalink.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
+      }
+    }
+  }
 });

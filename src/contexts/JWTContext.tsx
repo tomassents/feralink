@@ -4,6 +4,7 @@ import { JWTContextType, ActionMap, AuthState, AuthUser } from "@/types/auth";
 
 import axios from "@/utils/axios";
 import { isValidToken, setSession } from "@/utils/jwt";
+import userService from "@/services/userService";
 
 // Note: If you're trying to connect JWT to your own backend, don't forget
 // to remove the Axios mocks in the `/src/index.tsx` file.
@@ -16,7 +17,7 @@ const SIGN_UP = "SIGN_UP";
 type AuthActionTypes = {
   [INITIALIZE]: {
     isAuthenticated: boolean;
-    user: AuthUser;
+    user: AuthUser | null;
   };
   [SIGN_IN]: {
     user: AuthUser;
@@ -82,8 +83,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axios.get("/api/auth/my-account");
-          const { user } = response.data;
+          // Obtener la información completa del usuario
+          const user = await userService.getMe();
 
           dispatch({
             type: INITIALIZE,
@@ -116,23 +117,26 @@ function AuthProvider({ children }: { children: ReactNode }) {
     initialize();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const response = await axios.post("/api/auth/sign-in", {
-      email,
-      password,
-    });
-    const { accessToken, user } = response.data;
+  const signIn = async (username: string, password: string) => {
+    try {
+      const response = await userService.login({ username, password });
+      const { token } = response;
 
-    setSession(accessToken);
-    dispatch({
-      type: SIGN_IN,
-      payload: {
-        user: {
-          ...user,
-          role: user.role || "client"
+      setSession(token);
+      
+      // Obtener la información completa del usuario
+      const user = await userService.getMe();
+
+      dispatch({
+        type: SIGN_IN,
+        payload: {
+          user,
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error('Error during sign in:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
@@ -141,39 +145,44 @@ function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (
-    email: string,
+    username: string,
     password: string,
     firstName: string,
     lastName: string
   ) => {
-    const response = await axios.post("/api/auth/sign-up", {
-      email,
-      password,
-      firstName,
-      lastName,
-    });
-    const { accessToken, user } = response.data;
-
-    window.localStorage.setItem("accessToken", accessToken);
-    dispatch({
-      type: SIGN_UP,
-      payload: {
-        user,
-      },
-    });
+    try {
+      // Primero registramos el usuario
+      const response = await axios.post("/api/users/register", {
+        username,
+        password,
+        user_type_id: 1, // Por defecto, tipo de usuario cliente
+        branch_id: 1, // Por defecto, sucursal principal
+        role_id: 1, // Por defecto, rol básico
+      });
+      
+      // Luego creamos su información personal
+      await axios.post("/api/personal-info", {
+        user_id: response.data.id,
+        first_name: firstName,
+        last_name: lastName,
+      });
+      
+      // Ahora hacemos login automáticamente
+      await signIn(username, password);
+    } catch (error) {
+      console.error('Error during sign up:', error);
+      throw error;
+    }
   };
 
-  const resetPassword = (email: string) => console.log(email);
+  const resetPassword = (username: string) => console.log(username);
 
   return (
     <AuthContext.Provider
       value={{
         ...state,
         method: "jwt",
-        user: {
-          ...state.user,
-          role: state.user?.role || "client",
-        },
+        user: state.user,
         signIn,
         signOut,
         signUp,
